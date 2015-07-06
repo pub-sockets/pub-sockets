@@ -86,6 +86,7 @@ module.exports = React.createClass({
                           answers={this.state.answers}
                           correctIndex={this.state.correctIndex}
                           id={this.state.questionId} />
+            <UsersView usersInfo={thisstate.usersInfo} />
           </div>
         )
       } 

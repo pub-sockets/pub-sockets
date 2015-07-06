@@ -2,10 +2,10 @@ var db = require('./db/DatabaseManager.js');
 
 var PubGameModel = function() {
   this.answeredQuestions = {};
-  this.yourExtraTime = 30;
-  this.enemyExtraTime = 30;
-  this.yourScore = 0;
-  this.enemyScore = 0;
+  this.hostTeamExtraTime = 30;
+  this.notHostTeamExtraTime = 30;
+  this.hostTeamScore = 0;
+  this.notHostTeamScore = 0;
   this.gameStarted = false;
 
   this.userIds = [];
@@ -15,18 +15,15 @@ var PubGameModel = function() {
 PubGameModel.prototype.startGame = function(gameData, callback) {
   this.userIds = gameData.userIds;
 
-  //syntax of gameData:
-        //   var newGameLobby = {
-        //   users: [allUsers[userId].name],
-        //   userIds: [userId],
-        //   gameId: Math.floor(Math.random()*10000000000),
-        //   gameModel: null
-        // }
+  //eventually will set up teams. for right now, all users are
+  //on one team
+
+  console.log(gameData);
+
   this.gameStarted = true;
 
   //sets number of users and names
-
-  
+  gameData.usersInfo = this.userIds;
 
   //updates newData with a new question and hint for each player
     //make a function that figures out who to send stuff to and
@@ -43,22 +40,33 @@ PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
 
   data.changingUserSocket = userId;
 
-  this.yourExtraTime += 5;
+  this.hostTeamExtraTime += 5;
 
+  var newData;
+
+
+
+
+  callback(newData);
+};
+
+PubGameModel.prototype.decorateWithNewQuestion = function(data) {
   var newQuestionData = db.fetchNewQuestion();
+  newData.question = null;
+  newData.answers = null;
+  newData.correctIndex = null;
+  newData.id = null;
+};
 
+PubGameModel.prototype.decorateWithGameData = function(data, userId) {
   newData.timeData = {
-    yourExtraTime : this.yourExtraTime,
-    enemyExtraTime : this.enemyExtraTime
+    hostTeamExtraTime : this.hostTeamExtraTime,
+    notHostTeamExtraTime : this.notHostTeamExtraTime
   };
-
   newData.scoreData = {
-    yourScore : this.yourScore,
-    enemyScore : this.enemyScore
+    hostTeamScore : this.hostTeamScore,
+    notHostTeamScore : this.notHostTeamScore
   };
-
-  //AS WELL
-  callback(newQuestionData);
 };
 
 PubGameModel.prototype.endGame = function(callback) {
