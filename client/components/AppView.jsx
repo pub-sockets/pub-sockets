@@ -30,9 +30,7 @@ module.exports = React.createClass({
     socketInterface.addNewDataListener(this.updateData);
   },
   updateData: function(data) {
-    console.log(data);
     this.setState(data);
-    // this.render();
   },
   displayLobbyList: function(){
     this.setState({
@@ -59,8 +57,6 @@ module.exports = React.createClass({
           break;
         }
       }
-      console.log('yourLobby');
-      console.log(yourLobby);
       return (<LobbyView lobby={yourLobby} 
                          username={this.state.username}
                          displayLobbyList={this.displayLobbyList} />)

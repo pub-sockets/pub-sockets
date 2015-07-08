@@ -19,3 +19,9 @@ bower_components
 
 # Compiled JS
 public/scripts/app.js
+client/built/
+public/scripts/
+
+# Other stuff 
+db/question info
+questions.js

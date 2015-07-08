@@ -51,7 +51,6 @@ module.exports = {
               callback(allLobbyGames[i], i);
               break;
             }
-            console.log("user isn't in their lobby!");
             allLobbyGames[i].userIds.push(userId);
             allLobbyGames[i].users.push(allUsers[userId].name);
             callback(allLobbyGames[i], i);
@@ -60,7 +59,6 @@ module.exports = {
       }
 
       userSocket.on('newGameLobby', function() {
-        console.log('newGameLobby');
         var newGameLobby = {
           users: [allUsers[userId].name],
           userIds: [userId],
@@ -81,8 +79,6 @@ module.exports = {
       });
 
       userSocket.on('joinGameLobby', function(lobby) {
-        console.log('joinGameLobby');
-        console.log(lobby);
         allUsers[userId].gameId = lobby.gameId;
         findLobby(function(foundLobby){
           //Updates everyone's lobby data
@@ -97,7 +93,6 @@ module.exports = {
       });
 
       userSocket.on('leaveGameLobby', function() {
-        console.log('leaveGameLobby');
         findLobby(function(foundLobby) {
           var thisUserIndex = foundLobby.userIds.indexOf(userId);
           foundLobbyusers.splice(thisUserIndex, 1);
@@ -114,7 +109,6 @@ module.exports = {
       });
 
       userSocket.on('removeGameLobby', function() {
-        console.log('removeGameLobby');
         findLobby(function(foundLobby, foundLobbyIndex) {
           _.each(foundLobby.userIds, function(foundLobbyUserId) {
             allUsers[userId].gameId = null;
@@ -133,7 +127,6 @@ module.exports = {
 
 
       userSocket.on('closeGameLobby', function() {
-        console.log('closeGameLobby');
         findLobby(function(foundLobby) {
           foundLobby.closed = true;
           //Updates everyone's lobby data
@@ -142,7 +135,6 @@ module.exports = {
       });
 
       userSocket.on('openGameLobby', function() {
-        console.log('openGameLobby');
         findLobby(function(foundLobby) {
           foundLobby.closed = false;
           //Updates everyone's lobby data
@@ -150,10 +142,10 @@ module.exports = {
         });
       });
 
-        //TODO: force the user to close the lobby first
-      userSocket.on('startGame', function() {
-        console.log('startGame');
+      userSocket.on('startSingleTeamGame', function() {
         findLobby(function(foundLobby) {
+          foundLobby.lobbyDisplay = false;
+          foundLobby.lobbyListDisplay = false;
           var newGameModel = new PubGameModel();
           foundLobby.gameModel = newGameModel;
           //Updates everyone's lobby data
@@ -161,14 +153,23 @@ module.exports = {
           //Removes this game from the lobby list (different from closing!)
           var lobbyIndex = allLobbyGames.indexOf(foundLobby);
           if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
-          newGameModel.startGame(foundLobby, function(newData) {
-            newData.lobbyDisplay = false;
-            newData.lobbyListDisplay = false;
-            _.each(foundLobby.userIds, function(userIdInLobby) {
-              allUsers[userIdInLobby].socket.emit('newData', newData);
-            });
+          newGameModel.startSingleTeamGame(foundLobby, function(id, newData) {
+            // console.log(allUsers);
+            // console.log(id);
+            allUsers[id].socket.emit('newData', newData);
           });
         });
+      });
+
+      userSocket.on('startMultipleTeamGame', function() {
+        console.log('startMultipleTeamGame');
+        console.log('disabled this until it works');
+
+        // findLobby(function(foundLobby) {
+
+        // TODO implement multiple team games
+
+        // });
       });
 
       //////////////////////////////////////////

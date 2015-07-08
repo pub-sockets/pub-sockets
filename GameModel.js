@@ -1,4 +1,5 @@
 var db = require('./db/DatabaseManager.js');
+var _ = require('underscore');
 
 var PubGameModel = function() {
   this.answeredQuestions = {};
@@ -7,30 +8,66 @@ var PubGameModel = function() {
   this.hostTeamScore = 0;
   this.notHostTeamScore = 0;
   this.gameStarted = false;
+  this.singleTeamGame = true;
 
   this.userIds = [];
+
+  this.userObjects = [];
   //in game user info: tracks question id, hint ids
 }
 
-PubGameModel.prototype.startGame = function(gameData, callback) {
-  this.userIds = gameData.userIds;
+PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
+  var that = this;
+  that.userIds = lobbyData.userIds;
+  lobbyData.usersInfo = that.userIds;
+  that.singleTeamGame = true;
+  that.gameStarted = true;
+  
+  _.each(that.userIds, function(id) {
+    //in multiple teams function, that is where teams would be assigned
+    that.userObjects.push({questionUserId: id});
+  });
 
-  //eventually will set up teams. for right now, all users are
-  //on one team
+  _.each(that.userIds, function(id) {
+    var newQuestionData = db.fetchNewQuestion();
 
-  this.gameStarted = true;
-  this.decorateWithNewQuestion(gameData);
-  this.decorateWithGameData(gameData);
-  gameData.usersInfo = this.userIds;
+    var workingUserObject = _.find(that.userObjects, function(userObj) {
+      return userObj.question === undefined;
+    });
 
-  //updates newData with a new question and hint for each player
-    //make a function that figures out who to send stuff to and
-    //returns newData based on that. then use it in registeranswer
-    //as well
-    //AS WELL
+    workingUserObject.question = newQuestionData.question;
+    workingUserObject.answers = newQuestionData.answers;
+    workingUserObject.questionId = newQuestionData.id;
+    workingUserObject.correctIndex = newQuestionData.correctIndex-1;
 
-  callback(gameData);
+    // sets hint 1 
+    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
+      return (hinterObj.hint1Id !== newQuestionData.id);
+    });
+    workingHintUserObject.hint1 = newQuestionData.hint1;
+    workingHintUserObject.hint1Id = newQuestionData.id;
+
+    // sets hint 2
+    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
+      return (hinterObj.hint2Id !== newQuestionData.id);
+    });
+    workingHintUserObject.hint2 = newQuestionData.hint2;
+    workingHintUserObject.hint2Id = newQuestionData.id;
+
+  });
+
+  _.each(that.userObjects, function(userObject) {
+    console.log(userObject);
+    that.decorateWithGameData(userObject);
+
+    callback(userObject.questionUserId, userObject);
+  });
 };
+
+PubGameModel.prototype.startMultipleTeamGame = function(lobbyData, callback) {
+
+};
+
 
 
 PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
@@ -46,14 +83,6 @@ PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
 
 
   callback(newData);
-};
-
-PubGameModel.prototype.decorateWithNewQuestion = function(data) {
-  var newQuestionData = db.fetchNewQuestion();
-  data.question = newQuestionData.question;
-  data.answers = newQuestionData.answers;
-  data.correctIndex = newQuestionData.correctIndex-1;
-  data.id = newQuestionData.id;
 };
 
 PubGameModel.prototype.decorateWithGameData = function(data, userId) {

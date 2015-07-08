@@ -11,7 +11,6 @@ var counter = 0;
 
 module.exports = {
   fetchNewQuestion : function() {
-    console.log(questionList[counter]);
     return questionList[counter];
   },
   

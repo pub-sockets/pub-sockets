@@ -40,20 +40,42 @@ module.exports = React.createClass({
     if(!this.props || !this.props.lobby) {
       return (<div></div>)
     } else if(this.props.lobby.closed) {
-      return(
-        <div>
+      if(this.props.lobby.users.length > 3) {
+        return(
           <div>
-            <button id={"open-lobby-button"} onClick={this.openGameLobby}>
-              Open lobby
-            </button>
+            <div>
+              <button id={"start-game-button"} onClick={this.startSingleTeamGame}>
+               Start cooperative game!
+              </button>
+            </div>
+            <div>
+              <button id={"start-game-button"} onClick={this.startMultipleTeamGame}>
+               Start team game! (Not working yet)
+              </button>
+            </div>
+            <div>
+              <button id={"open-lobby-button"} onClick={this.openGameLobby}>
+                Open lobby
+              </button>
+            </div>
           </div>
-          <div>
-            <button id={"start-game-button"} onClick={this.startGame}>
-             Start game!
-            </button>
-          </div>
-        </div>
         )
+      } else if(this.props.lobby.users.length > 1) {      
+        return(
+          <div>
+            <div>
+              <button id={"start-game-button"} onClick={this.startSingleTeamGame}>
+               Start cooperative game!
+              </button>
+            </div>
+            <div>
+              <button id={"open-lobby-button"} onClick={this.openGameLobby}>
+                Open lobby
+              </button>
+            </div>
+          </div>
+          )
+      }
     } else {
       return(
         <div> 
@@ -66,8 +88,11 @@ module.exports = React.createClass({
       )
     }
   },
-  startGame: function() {
-    clientSocket.startGame();
+  startSingleTeamGame: function() {
+    clientSocket.startSingleTeamGame();
+  },
+  startMultipleTeamGame: function() {
+    clientSocket.startMultipleTeamGame();
   },
   openGameLobby: function() {
     clientSocket.openGameLobby();

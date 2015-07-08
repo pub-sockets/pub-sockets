@@ -27,11 +27,13 @@ module.exports = {
   leaveGameLobby: function(lobby) {
     socketServer.emit('leaveGameLobby');
   },
-  startGame: function() {
-    socketServer.emit('startGame');
+  startSingleTeamGame: function() {
+    socketServer.emit('startSingleTeamGame');
+  },
+  startMultipleTeamGame: function() {
+    socketServer.emit('startMultipleTeamGame');
   },
   closeGameLobby: function() {
-    console.log('halp');
     socketServer.emit('closeGameLobby');
   },
   openGameLobby: function() {
@@ -48,7 +50,6 @@ module.exports = {
 
 
   answer: function(emittingAnswer, correct, questionId) {
-    console.log('answer was emitted: ' + emittingAnswer);
     socketServer.emit('answer', { answer : emittingAnswer, 
                                   correct: correct,
                                   questionId: questionId });
