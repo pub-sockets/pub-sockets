@@ -74,6 +74,7 @@ module.exports = React.createClass({
   },
   closeGameLobby: function() {
     console.log('woops');
+    console.log('aaaa');
     clientSocket.closeGameLobby();
   },
   removeGameLobby: function() {

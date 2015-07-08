@@ -25,9 +25,6 @@ console.log('set port');
 
 var server = http.createServer(app);
 
-//TODO BUGBUG 
-//huge bug--when a user connects, it resets everything. 
-//don't know how to fix this
 var initializeOnce = _.once(sockets.initializeGameManager.bind(sockets));
 initializeOnce(server);
 
