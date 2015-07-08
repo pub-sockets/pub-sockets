@@ -39,9 +39,6 @@ module.exports = React.createClass({
     });
   },
   render: function() {
-    console.log('AppView.render()');
-    console.log(this.state);
-  //rendering
     if (this.state.lobbyListDisplay) {
       //User is in the lobby list view
       return (<LobbyListView lobbies={this.state.lobbies} 
@@ -52,9 +49,6 @@ module.exports = React.createClass({
     //User is in the lobby display view
       //iterates through all lobbies (yeah, i know)
       var yourLobby = null;
-      console.log('looking for your lobby');
-      console.log('your username is ',this.state.username)
-      console.log(this.state.lobbies);
       for(var i = 0; i < this.state.lobbies.length; i++) {
         //if your userId is in a lobby, 
         if(!this.state.lobbies[i].userIds) continue;

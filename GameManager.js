@@ -1,5 +1,6 @@
 var db = require('./db/DatabaseManager.js');
 var PubGameModel = require('./GameModel.js');
+var _ = require('underscore');
 
 //Setup for: only one game at a time
 var allUsers = {};
@@ -7,7 +8,7 @@ var allGames = {};
 var allLobbyGames = [];
 
 module.exports = {
-  init : function(expressServer) {
+  initializeGameManager : function(expressServer) {
     io = require('socket.io')(expressServer);
 
     io.on('connection', function(userSocket) {
@@ -27,7 +28,9 @@ module.exports = {
       }
       counter++;
       
-      //Emits lobbies to all users (fix)
+      console.log('BUG');
+      console.log(allLobbyGames);      
+
       io.emit('newData', {
         lobbies:allLobbyGames,
           lobbyDisplay: false,
@@ -42,22 +45,28 @@ module.exports = {
       /// Lobby actions
       //////////////////////////////////////////
 
-      var findLobby = function(id, lobbyId, callback) {
+      var findLobby = function(callback) {
+        var lobbyId = allUsers[userId].gameId;
         for(var i = 0; i < allLobbyGames.length; i++){
           if(lobbyId === allLobbyGames[i].gameId) {
             console.log('got to the lobby');
-            if(allLobbyGames[i].users.indexOf(allUsers[id].name) === -1){
+            console.log(allLobbyGames[i]);
+            console.log(userId);
+            if(allLobbyGames[i].userIds.indexOf(userId) > -1){
+              // They are in this lobby!
               console.log('allLobbyGames[i]]');
               console.log(allLobbyGames[i]);
-              callback(allLobbyGames[i]);
+              callback(allLobbyGames[i], i);
               break;
             }
-            return null;
+            console.log("user isn't in their lobby!");
+            allLobbyGames[i].userIds.push(userId);
+            allLobbyGames[i].users.push(allUsers[userId].name);
+            callback(allLobbyGames[i], i);
           }
         }
       }
 
-      //User makes a new game lobby
       userSocket.on('newGameLobby', function() {
         console.log('newGameLobby');
         var newGameLobby = {
@@ -79,15 +88,11 @@ module.exports = {
         });
       });
 
-      //User joins a game lobby
       userSocket.on('joinGameLobby', function(lobby) {
         console.log('joinGameLobby');
+        console.log(lobby);
         allUsers[userId].gameId = lobby.gameId;
-        findLobby(userId, allUsers[userId].gameId, function(foundLobby) {
-          console.log('foundLobby');
-          console.log(foundLobby);
-          foundLobby.users.push(allUsers[userId].name);
-          foundLobby.userIds.push(userId);
+        findLobby(function(foundLobby){
           //Updates everyone's lobby data
           io.emit('newData', {lobbies:allLobbyGames});
           //Puts lobby joiner in their new lobby
@@ -99,46 +104,77 @@ module.exports = {
         });
       });
 
-      //User closes a lobby
-      userSocket.on('closeLobby', function() {
-        console.log('closeLobby');
-
+      userSocket.on('leaveGameLobby', function() {
+        console.log('leaveGameLobby');
+        findLobby(function(foundLobby) {
+          var thisUserIndex = foundLobby.userIds.indexOf(userId);
+          foundLobbyusers.splice(thisUserIndex, 1);
+          foundLobbyuserIds.splice(thisUserIndex, 1);
+          //Updates everyone's lobby data
+          io.emit('newData', {lobbies:allLobbyGames});
+          //Puts lobby leaver back in the lobby list
+          userSocket.emit('newData', {
+            lobbies:allLobbyGames,
+            lobbyDisplay: false,
+            lobbyListDisplay: true
+          });
+        });
       });
 
-      //User opens a lobby 
-      userSocket.on('openLobby', function() {
+      userSocket.on('removeGameLobby', function() {
+        console.log('removeGameLobby');
+        findLobby(function(foundLobby, foundLobbyIndex) {
+          _.each(foundLobby.userIds, function(foundLobbyUserId) {
+            allUsers[userId].gameId = null;
+          });
+          allLobbyGames.splice(foundLobbyIndex, 1);
+          //Updates everyone's lobby data
+          io.emit('newData', {lobbies:allLobbyGames});
+          //Puts lobby leaver back in the lobby list
+          userSocket.emit('newData', {
+            lobbies:allLobbyGames,
+            lobbyDisplay: false,
+            lobbyListDisplay: true
+          });
+        });
       });
 
-      //User starts a game
+
+      userSocket.on('closeGameLobby', function() {
+        console.log('closeGameLobby');
+        findLobby(function(foundLobby) {
+          foundLobby.closed = true;
+          //Updates everyone's lobby data
+          io.emit('newData', {lobbies:allLobbyGames});
+        });
+      });
+
+      userSocket.on('openGameLobby', function() {
+        console.log('openGameLobby');
+        findLobby(function(foundLobby) {
+          foundLobby.closed = false;
+          //Updates everyone's lobby data
+          io.emit('newData', {lobbies:allLobbyGames});
+        });
+      });
+
         //TODO: force the user to close the lobby first
       userSocket.on('startGame', function() {
         console.log('startGame');
-        //Finds the game this user is in
-        var relevantGame;
-        for(var i = 0; i < allLobbyGames.length; i++){
-          if(allLobbyGames[i].gameId === allUsers[userId].gameId){
-            relevantGame = allLobbyGames[i];
-            break;
-          }
-        }
-        console.log('relevantGame:');
-        console.log(relevantGame)
-        var newGameModel = new PubGameModel();
-        relevantGame.gameModel = newGameModel;
-        //Removes this game from the lobby list
-        var lobbyIndex = allLobbyGames.indexOf(relevantGame);
-        if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
-        //Updates everyone's lobby data (closing this lobby)
-        io.emit('newData', {lobbies:allLobbyGames});        
-
-        newGameModel.startGame(relevantGame, function(newData) {
-          newData.lobbyDisplay = false;
-          newData.lobbyListDisplay = false;
-
-          //eventually, only emit to people in this room.
-          //right now, just emit to all users
-          relevantGame.userIds.forEach(function(userIdInLobby) {
-            allUsers[userIdInLobby].socket.emit('newData', newData);
+        findLobby(function(foundLobby) {
+          var newGameModel = new PubGameModel();
+          foundLobby.gameModel = newGameModel;
+          //Updates everyone's lobby data
+          io.emit('newData', {lobbies:allLobbyGames});        
+          //Removes this game from the lobby list (different from closing!)
+          var lobbyIndex = allLobbyGames.indexOf(foundLobby);
+          if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
+          newGameModel.startGame(foundLobby, function(newData) {
+            newData.lobbyDisplay = false;
+            newData.lobbyListDisplay = false;
+            _.each(foundLobby.userIds, function(userIdInLobby) {
+              allUsers[userIdInLobby].socket.emit('newData', newData);
+            });
           });
         });
       });
@@ -147,7 +183,6 @@ module.exports = {
       /// In game actions
       //////////////////////////////////////////
 
-      //User answers a question
       userSocket.on('answer', function(data) {
         console.log('answer');
         var relevantGame = allGames[allUsers[userId].gameId];
@@ -157,7 +192,6 @@ module.exports = {
         io.emit('newData', newDataObject)
       });
 
-      //User's client says the time has run out
       userSocket.on('gameEnd', function(data) {
         console.log('gameEnd');
         var relevantGame = allGames[allUsers[userId].gameId];

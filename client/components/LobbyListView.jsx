@@ -12,7 +12,8 @@ module.exports = React.createClass({
       <div id="LobbyView">
         <div>Your name: {this.props.username}</div>
         {this.props.lobbies.map(function(item){
-          return (
+          if(item.closed) return (<span></span>);
+          else return (
             <LobbyEntryView lobby={item} />
           )
         })}

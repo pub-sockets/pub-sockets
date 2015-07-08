@@ -8,6 +8,7 @@ var app = require('../server');
 var debug = require('debug')('server:server');
 var http = require('http');
 var sockets = require('../GameManager.js');
+var _ = require('underscore');
 
 /**
  * Get port from environment and store in Express.
@@ -24,8 +25,11 @@ console.log('set port');
 
 var server = http.createServer(app);
 
-
-sockets.init(server);
+//TODO BUGBUG 
+//huge bug--when a user connects, it resets everything. 
+//don't know how to fix this
+var initializeOnce = _.once(sockets.initializeGameManager.bind(sockets));
+initializeOnce(server);
 
 
 /**

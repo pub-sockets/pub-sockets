@@ -1,31 +1,27 @@
 var React = require('react');
+var clientSocket = require('../ClientSocketManager.js');
 
 module.exports = React.createClass({
   render: function() {
-    //shows all the users in the lobby
-    //game start button
-    //back button
     return (
       <div>
         <div>
           Your name: {this.props.username}
         </div>
-        <div id={"LobbyView"}>
+        <div id={"lobby-view"}>
           {this.renderUsersIfTheyExist()}
         </div>
-        <div>
-          <button id={"StartGameButton"} onClick={this.startGame}>
-           Start game!
-          </button>
+        <div id={"lobby-buttons"}>
+          buttons: {this.renderButtons()}
         </div>
         <div>
-          <button id={"RemoveLobbyButton"}>
-            Remove this lobby (not working yet)
+          <button id={"remove-lobby-button"} onClick={this.removeGameLobby}>
+            Remove this lobby
           </button>
         </div>
         <div>
           <button id={"BackButton"} onClick={this.props.displayLobbyList}>
-            Back
+            Go back
           </button>
         </div>
       </div>
@@ -46,16 +42,41 @@ module.exports = React.createClass({
     } else if(this.props.lobby.closed) {
       return(
         <div>
-          <button id={"CloseLobbyButton"} onClick={}
+          <div>
+            <button id={"open-lobby-button"} onClick={this.openGameLobby}>
+              Open lobby
+            </button>
+          </div>
+          <div>
+            <button id={"start-game-button"} onClick={this.startGame}>
+             Start game!
+            </button>
+          </div>
         </div>
         )
     } else {
-      return()
+      return(
+        <div>
+          <div>
+            <button id={"close-lobby-button"} onClick={this.closeGameLobby}>
+              Close lobby
+            </button>
+          </div>
+        </div>
+      )
     }
   },
-  
   startGame: function() {
-    //no arguments: the server knows which game you're in already
-    require('../ClientSocketManager.js').startGame();
+    clientSocket.startGame();
+  },
+  openGameLobby: function() {
+    clientSocket.openGameLobby();
+  },
+  closeGameLobby: function() {
+    console.log('woops');
+    clientSocket.closeGameLobby();
+  },
+  removeGameLobby: function() {
+    clientSocket.removeGameLobby();
   }
 });

@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var fs = require('fs');
 
 var app = express();
 
@@ -35,6 +36,10 @@ if (app.get('env') === 'development') {
     });
   });
 }
+
+app.get('/', function(req, res) {
+    res.render('public/index.html')
+});
 
 // production error handler
 // no stacktraces leaked to user

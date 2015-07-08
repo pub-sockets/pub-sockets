@@ -24,14 +24,21 @@ module.exports = {
   joinGameLobby: function(lobby) {
     socketServer.emit('joinGameLobby', lobby);
   },
+  leaveGameLobby: function(lobby) {
+    socketServer.emit('leaveGameLobby');
+  },
   startGame: function() {
     socketServer.emit('startGame');
   },
-  closeLobby: function() {
-    socketServer.emit('closeLobby');
+  closeGameLobby: function() {
+    console.log('halp');
+    socketServer.emit('closeGameLobby');
   },
-  openLobby: function() {
-    socketServer.emit('openLobby');
+  openGameLobby: function() {
+    socketServer.emit('openGameLobby');
+  },
+  removeGameLobby: function() {
+    socketServer.emit('removeGameLobby');
   },
 
 
