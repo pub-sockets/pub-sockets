@@ -28,9 +28,6 @@ module.exports = {
       }
       counter++;
       
-      console.log('BUG');
-      console.log(allLobbyGames);      
-
       io.emit('newData', {
         lobbies:allLobbyGames,
           lobbyDisplay: false,
@@ -49,13 +46,8 @@ module.exports = {
         var lobbyId = allUsers[userId].gameId;
         for(var i = 0; i < allLobbyGames.length; i++){
           if(lobbyId === allLobbyGames[i].gameId) {
-            console.log('got to the lobby');
-            console.log(allLobbyGames[i]);
-            console.log(userId);
             if(allLobbyGames[i].userIds.indexOf(userId) > -1){
               // They are in this lobby!
-              console.log('allLobbyGames[i]]');
-              console.log(allLobbyGames[i]);
               callback(allLobbyGames[i], i);
               break;
             }

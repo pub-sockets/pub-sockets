@@ -5,6 +5,7 @@ var TimerView = require('./TimerView.jsx');
 var QuestionView = require('./QuestionView.jsx');
 var LobbyView = require('./LobbyView.jsx');
 var LobbyListView = require('./LobbyListView.jsx');
+var UsersView = require('./UsersView.jsx');
 
 var socketInterface = require('../ClientSocketManager.js');
 
@@ -29,6 +30,7 @@ module.exports = React.createClass({
     socketInterface.addNewDataListener(this.updateData);
   },
   updateData: function(data) {
+    console.log(data);
     this.setState(data);
     // this.render();
   },
@@ -80,7 +82,7 @@ module.exports = React.createClass({
                           answers={this.state.answers}
                           correctIndex={this.state.correctIndex}
                           id={this.state.questionId} />
-            <UsersView usersInfo={thisstate.usersInfo} />
+            <UsersView usersInfo={this.state.usersInfo} />
           </div>
         )
       } 

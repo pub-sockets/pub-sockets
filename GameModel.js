@@ -18,11 +18,9 @@ PubGameModel.prototype.startGame = function(gameData, callback) {
   //eventually will set up teams. for right now, all users are
   //on one team
 
-  console.log(gameData);
-
   this.gameStarted = true;
-
-  //sets number of users and names
+  this.decorateWithNewQuestion(gameData);
+  this.decorateWithGameData(gameData);
   gameData.usersInfo = this.userIds;
 
   //updates newData with a new question and hint for each player
@@ -52,18 +50,18 @@ PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
 
 PubGameModel.prototype.decorateWithNewQuestion = function(data) {
   var newQuestionData = db.fetchNewQuestion();
-  newData.question = null;
-  newData.answers = null;
-  newData.correctIndex = null;
-  newData.id = null;
+  data.question = newQuestionData.question;
+  data.answers = newQuestionData.answers;
+  data.correctIndex = newQuestionData.correctIndex-1;
+  data.id = newQuestionData.id;
 };
 
 PubGameModel.prototype.decorateWithGameData = function(data, userId) {
-  newData.timeData = {
+  data.timeData = {
     hostTeamExtraTime : this.hostTeamExtraTime,
     notHostTeamExtraTime : this.notHostTeamExtraTime
   };
-  newData.scoreData = {
+  data.scoreData = {
     hostTeamScore : this.hostTeamScore,
     notHostTeamScore : this.notHostTeamScore
   };

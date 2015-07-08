@@ -12,7 +12,7 @@ module.exports = React.createClass({
           {this.renderUsersIfTheyExist()}
         </div>
         <div id={"lobby-buttons"}>
-          buttons: {this.renderButtons()}
+          {this.renderButtons()}
         </div>
         <div>
           <button id={"remove-lobby-button"} onClick={this.removeGameLobby}>
@@ -56,7 +56,7 @@ module.exports = React.createClass({
         )
     } else {
       return(
-        <div>
+        <div> 
           <div>
             <button id={"close-lobby-button"} onClick={this.closeGameLobby}>
               Close lobby
@@ -73,8 +73,6 @@ module.exports = React.createClass({
     clientSocket.openGameLobby();
   },
   closeGameLobby: function() {
-    console.log('woops');
-    console.log('aaaa');
     clientSocket.closeGameLobby();
   },
   removeGameLobby: function() {
