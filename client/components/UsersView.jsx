@@ -4,7 +4,7 @@ module.exports = React.createClass({
   render: function() {
     return (
       <div className="users-view">
-        Users info: {this.props.usersInfo}
+        You are: {this.props.username}
       </div>
     )
   }

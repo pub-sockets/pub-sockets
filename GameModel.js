@@ -28,7 +28,10 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
   
   _.each(that.userIds, function(id) {
     //in multiple teams function, that is where teams would be assigned
-    that.userObjects.push({questionUserId: id});
+    that.userObjects.push({
+      questionUserId: id, 
+      username: lobbyData.users[lobbyData.userIds.indexOf(id)]
+    });
   });
 
   _.each(that.userIds, function(id) {
@@ -51,7 +54,8 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
 
     // sets hint 1 
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint1User === undefined);
+      return (hinterObj.hint1User === undefined && 
+              hinterObj.questionUserId !== workingUserObject.questionUserId);
       // return (hinterObj.hint1Id === newQuestionData.id);
     });
     workingHintUserObject.hint1 = newQuestionData.hint1;
@@ -59,7 +63,8 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
 
     // sets hint 2
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint2User === undefined);
+      return (hinterObj.hint2User === undefined && 
+              hinterObj.questionUserId !== workingUserObject.questionUserId);
       // return (hinterObj.hint2Id === newQuestionData.id);
     });
     workingHintUserObject.hint2 = newQuestionData.hint2;
@@ -71,6 +76,7 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     userObject.lobbyDisplay = false;
     userObject.lobbyListDisplay = false;
 
+    console.log(userObject);
     callback(userObject.questionUserId, userObject);
   });
 };
