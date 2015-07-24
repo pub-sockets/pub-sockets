@@ -29,9 +29,7 @@ module.exports = {
       counter++;
       
       io.emit('newData', {
-        lobbies:allLobbyGames,
-          lobbyDisplay: false,
-          lobbyListDisplay: true
+        lobbies:allLobbyGames
       });
 
       userSocket.emit('newData', {
@@ -154,8 +152,6 @@ module.exports = {
           var lobbyIndex = allLobbyGames.indexOf(foundLobby);
           if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
           newGameModel.startSingleTeamGame(foundLobby, function(id, newData) {
-            // console.log(allUsers);
-            // console.log(id);
             allUsers[id].socket.emit('newData', newData);
           });
         });

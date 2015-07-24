@@ -70,8 +70,8 @@ module.exports = React.createClass({
       } else {
         return (
           <div id="AppView">
-            <HintView hint={this.state.hint1} />
-            <HintView hint={this.state.hint2} />
+            <HintView hint={this.state.hint1} hintUser={this.state.hint1User} />
+            <HintView hint={this.state.hint2} hintUser={this.state.hint2User} />
             <TimerView time={this.state.timeData} 
                        gameStart={this.state.gameStart} 
                        scores={this.state.scoreData} />

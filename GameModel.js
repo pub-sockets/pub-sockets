@@ -17,6 +17,9 @@ var PubGameModel = function() {
 }
 
 PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
+  console.log('lobbyData');
+  console.log(lobbyData);
+
   var that = this;
   that.userIds = lobbyData.userIds;
   lobbyData.usersInfo = that.userIds;
@@ -31,9 +34,15 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
   _.each(that.userIds, function(id) {
     var newQuestionData = db.fetchNewQuestion();
 
-    var workingUserObject = _.find(that.userObjects, function(userObj) {
-      return userObj.question === undefined;
-    });
+    var questionUserIndex = -1;
+    var workingUserObject = null;
+    for(var i = 0; i < that.userObjects.length; i++) {
+      if(that.userObjects[i].question === undefined) {
+        questionUserIndex = i;
+        workingUserObject = that.userObjects[i];
+        break;
+      }
+    }
 
     workingUserObject.question = newQuestionData.question;
     workingUserObject.answers = newQuestionData.answers;
@@ -42,23 +51,25 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
 
     // sets hint 1 
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint1Id !== newQuestionData.id);
-
+      return (hinterObj.hint1User === undefined);
+      // return (hinterObj.hint1Id === newQuestionData.id);
     });
     workingHintUserObject.hint1 = newQuestionData.hint1;
-    workingHintUserObject.hint1Id = newQuestionData.id;
+    workingHintUserObject.hint1User = lobbyData.users[questionUserIndex];
 
     // sets hint 2
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint2Id !== newQuestionData.id);
+      return (hinterObj.hint2User === undefined);
+      // return (hinterObj.hint2Id === newQuestionData.id);
     });
     workingHintUserObject.hint2 = newQuestionData.hint2;
-    workingHintUserObject.hint2Id = newQuestionData.id;
-
+    workingHintUserObject.hint2User = lobbyData.users[questionUserIndex];
   });
 
   _.each(that.userObjects, function(userObject) {
     that.decorateWithGameData(userObject);
+    userObject.lobbyDisplay = false;
+    userObject.lobbyListDisplay = false;
 
     callback(userObject.questionUserId, userObject);
   });
