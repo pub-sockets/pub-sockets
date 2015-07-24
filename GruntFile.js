@@ -65,6 +65,13 @@ module.exports = function(grunt) {
       }
     },
 
+    flow: {
+      options: {
+          style: 'color'
+      },
+      files: {}
+    },
+
     // Watching
     watch: {
       scripts: {
@@ -129,6 +136,7 @@ module.exports = function(grunt) {
 
 
   grunt.registerTask('build', [
+    'flow',
     'sass',
     'cssmin', 
     'browserify'
@@ -136,7 +144,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('server-dev', function (target) {
 
-    this.requires(['sass', 'cssmin', 'browserify']);
+    this.requires(['flow', 'sass', 'cssmin', 'browserify']);
 
     // var nodemon = grunt.util.spawn({
     //      cmd: 'grunt',

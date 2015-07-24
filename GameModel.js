@@ -43,6 +43,7 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     // sets hint 1 
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
       return (hinterObj.hint1Id !== newQuestionData.id);
+
     });
     workingHintUserObject.hint1 = newQuestionData.hint1;
     workingHintUserObject.hint1Id = newQuestionData.id;
@@ -57,7 +58,6 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
   });
 
   _.each(that.userObjects, function(userObject) {
-    console.log(userObject);
     that.decorateWithGameData(userObject);
 
     callback(userObject.questionUserId, userObject);
@@ -78,9 +78,6 @@ PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
   this.hostTeamExtraTime += 5;
 
   var newData;
-
-
-
 
   callback(newData);
 };

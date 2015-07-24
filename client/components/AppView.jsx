@@ -30,6 +30,7 @@ module.exports = React.createClass({
     socketInterface.addNewDataListener(this.updateData);
   },
   updateData: function(data) {
+    console.log(data);
     this.setState(data);
   },
   displayLobbyList: function(){
