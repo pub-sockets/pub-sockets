@@ -1,7 +1,7 @@
 var mongo = require('mongodb');
 var monk = require('monk');
-var dbConfig = require('./mongolab.config'); 
-var db = monk(dbConfig);
+// var dbConfig = require('./mongolab.config'); 
+// var db = monk(dbConfig);
 
 // var questionList = db.get('TestQuestions');
 
