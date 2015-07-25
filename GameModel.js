@@ -29,13 +29,10 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
   _.each(that.userIds, function(id) {
     //in multiple teams function, that is where teams would be assigned
     that.userObjects.push({
-      questionUserId: id, 
+      id: id, 
       username: lobbyData.users[lobbyData.userIds.indexOf(id)]
     });
-    that.nextQuestionQueue.push({
-      queueUserId: id,
-      queueUsername: lobbyData.users[lobbyData.userIds.indexOf(id)]
-    })
+    that.nextQuestionQueue.push(that.userObjects[that.userObjects.length-1]);
   });
 
   _.each(that.userIds, function(id) {
@@ -59,7 +56,7 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     // sets hint 1 
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
       return (hinterObj.hint1User === undefined && 
-              hinterObj.questionUserId !== workingUserObject.questionUserId);
+              hinterObj.id !== workingUserObject.id);
       // return (hinterObj.hint1Id === newQuestionData.id);
     });
     workingHintUserObject.hint1 = newQuestionData.hint1;
@@ -68,7 +65,7 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     // sets hint 2
     var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
       return (hinterObj.hint2User === undefined && 
-              hinterObj.questionUserId !== workingUserObject.questionUserId);
+              hinterObj.id !== workingUserObject.id);
       // return (hinterObj.hint2Id === newQuestionData.id);
     });
     workingHintUserObject.hint2 = newQuestionData.hint2;
@@ -80,7 +77,7 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     userObject.lobbyDisplay = false;
     userObject.lobbyListDisplay = false;
 
-    callback(userObject.questionUserId, userObject);
+    callback(userObject.id, userObject);
   });
 };
 
@@ -90,66 +87,51 @@ PubGameModel.prototype.startMultipleTeamGame = function(lobbyData, callback) {
 
 
 
-PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
-
+PubGameModel.prototype.registerAnswer = function(lobbyData, userId, correct, callback) {
   var that = this;
-  that.userIds = lobbyData.userIds;
-  lobbyData.usersInfo = that.userIds;
-  that.singleTeamGame = true;
-  that.gameStarted = true;
-  
-  _.each(that.userIds, function(id) {
-    //in multiple teams function, that is where teams would be assigned
-    that.userObjects.push({
-      questionUserId: id, 
-      username: lobbyData.users[lobbyData.userIds.indexOf(id)]
-    });
-  });
 
-  _.each(that.userIds, function(id) {
-    var newQuestionData = db.fetchNewQuestion();
+  var newQuestionData = db.fetchNewQuestion();
 
-    var questionUserIndex = -1;
-    var workingUserObject = null;
-    for(var i = 0; i < that.userObjects.length; i++) {
-      if(that.userObjects[i].question === undefined) {
-        questionUserIndex = i;
-        workingUserObject = that.userObjects[i];
-        break;
-      }
-    }
+  var userToGetQuestion = _.find(that.userObjects, function(userObj) {
+    return userObj.id === userId;
+  })
 
-    workingUserObject.question = newQuestionData.question;
-    workingUserObject.answers = newQuestionData.answers;
-    workingUserObject.questionId = newQuestionData.id;
-    workingUserObject.correctIndex = newQuestionData.correctIndex-1;
+  userToGetQuestion.question = newQuestionData.question;
+  userToGetQuestion.answers = newQuestionData.answers;
+  userToGetQuestion.questionId = newQuestionData.id;
+  userToGetQuestion.correctIndex = newQuestionData.correctIndex-1;
 
-    // sets hint 1 
-    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint1User !== workingUserObject.username);
-    });
-    workingHintUserObject.hint1 = newQuestionData.hint1;
-    workingHintUserObject.hint1User = lobbyData.users[questionUserIndex];
 
-    // sets hint 2
-    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint2User !== workingUserObject.username);
-    });
-    workingHintUserObject.hint2 = newQuestionData.hint2;
-    workingHintUserObject.hint2User = lobbyData.users[questionUserIndex];
-  });
+  //is any of this correct? i don't know.
+  // sets hint 1 
+  var workingHintUserObject = that.nextQuestionQueue.shift();
+  that.nextQuestionQueue.push(workingHintUserObject);
+  console.log(workingHintUserObject);
+  console.log(userToGetQuestion);
+  if(workingHintUserObject.username === userToGetQuestion.username) {
+    workingHintUserObject = that.nextQuestionQueue.shift();
+    that.nextQuestionQueue.push(workingHintUserObject);
+  }
+  workingHintUserObject.hint1 = newQuestionData.hint1;
+  workingHintUserObject.hint1User = userToGetQuestion.username;
+
+  // sets hint 2
+  var workingHintUserObject = that.nextQuestionQueue.shift();
+  that.nextQuestionQueue.push(workingHintUserObject);
+  if(workingHintUserObject.username === userToGetQuestion.username) {
+    workingHintUserObject = that.nextQuestionQueue.shift();
+    that.nextQuestionQueue.push(workingHintUserObject);
+  }
+  workingHintUserObject.hint2 = newQuestionData.hint2;
+  workingHintUserObject.hint2User = userToGetQuestion.username;
 
   _.each(that.userObjects, function(userObject) {
     that.decorateWithGameData(userObject);
     userObject.lobbyDisplay = false;
     userObject.lobbyListDisplay = false;
 
-    callback(userObject.questionUserId, userObject);
+    callback(userObject.id, userObject);
   });
-
-/// old code
-  
-  data.changingUserSocket = userId;
 
   this.hostTeamExtraTime += 5;
 };

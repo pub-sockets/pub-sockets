@@ -31,13 +31,17 @@ module.exports = React.createClass({
     if(this.state.answerStatus === "wrong" ) {
       return (
         <div class="wrong">
+          <br/>
           <b>WRONG</b>
+          <br/>
         </div>
       )
     } else if(this.state.answerStatus === "right" ) {
       return (
         <div class="right">
+          <br/>
           <b>RIGHT</b>
+          <br/>
         </div>
       )
     } else {

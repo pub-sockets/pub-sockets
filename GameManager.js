@@ -28,13 +28,9 @@ module.exports = {
       }
       counter++;
       
-      io.emit('newData', {
-        lobbies:allLobbyGames
-      });
+      io.emit('newData', { lobbies:allLobbyGames });
 
-      userSocket.emit('newData', {
-        username:allUsers[userId].name
-      });
+      userSocket.emit('newData', { username: allUsers[userId].name });
 
       //////////////////////////////////////////
       /// Lobby actions
@@ -142,13 +138,14 @@ module.exports = {
 
       userSocket.on('startSingleTeamGame', function() {
         findLobby(function(foundLobby) {
+          allGames[foundLobby.gameId] = foundLobby;
           var newGameModel = new PubGameModel();
           foundLobby.gameModel = newGameModel;
           //Updates everyone's lobby data
           io.emit('newData', {lobbies:allLobbyGames});        
           //Removes this game from the lobby list (different from closing!)
           var lobbyIndex = allLobbyGames.indexOf(foundLobby);
-          if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
+          // if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
           newGameModel.startSingleTeamGame(foundLobby, function(id, newData) {
             allUsers[id].socket.emit('newData', newData);
           });
@@ -156,8 +153,6 @@ module.exports = {
       });
 
       userSocket.on('startMultipleTeamGame', function() {
-        console.log('startMultipleTeamGame');
-        console.log('disabled this until it works');
 
         // TODO implement multiple team games
 
@@ -167,27 +162,26 @@ module.exports = {
       /// In game actions
       //////////////////////////////////////////
 
-      userSocket.on('answer', function(data) {
-        console.log('answer');
-        console.log(data);
-        return;
-        var relevantGame = allGames[allUsers[userId].gameId];
-        relevantGame.registerAnswer(data, userId, function(id, newData) {
-          //This will get called multiple times--three times, specifically
-          allUsers[id].socket.emit('newData', newData);
-        });
+      userSocket.on('answer', function(correct) {
+        findLobby(function(foundLobby) {   
+          var relevantGame = allGames[allUsers[userId].gameId];
+          relevantGame.gameModel.registerAnswer(
+            foundLobby, userId, correct.correct, function(id, newData) {
+              //This will get called multiple times--three times, specifically
+              allUsers[id].socket.emit('newData', newData);
+            }
+          );
 
-        //eventually, only emit to people in this room
-        io.emit('newData', newDataObject)
+          // //eventually, only emit to people in this room
+          // io.emit('newData', newDataObject)
+        })
       });
 
       userSocket.on('gameEnd', function(data) {
-        console.log('gameEnd');
         var relevantGame = allGames[allUsers[userId].gameId];
 
         //eventually, only emit to people in this room
         relevantGame.endGame(function(winnerData){
-          console.log(winnerData);
         });
       });
 
