@@ -2,29 +2,43 @@ var React = require('react');
 var AnswerEntryView = require('./AnswerEntryView.jsx');
 
 module.exports = React.createClass({
-
+  getInitialState: function() {
+    return {
+      answerStatus: null
+    }
+  },
   answerRerender: function(answeredCorrect) {
-    //'this' is bound to QuestionView
-    (answeredCorrect) ? this.render("right") : this.render('wrong');
+    if(answeredCorrect) {
+      this.setState({
+          answerStatus: "right"
+        }
+      );
+    } else {
+      this.setState({
+          answerStatus: "wrong"
+        }
+      );
+    } 
+    var that = this;
+    setTimeout(function() {
+      that.setState({answerStatus: null});
+    }, 1000);
+    this.render();
   },
   render: function(renderType) {
 
     //TODO: show the correct answer after you answer
-    if(renderType === "wrong" ) {
+    if(this.state.answerStatus === "wrong" ) {
       return (
-      
         <div class="wrong">
           <b>WRONG</b>
         </div>
-      
       )
-    } else if(renderType === "right") {
+    } else if(this.state.answerStatus === "right" ) {
       return (
-
         <div class="right">
           <b>RIGHT</b>
         </div>
-      
       )
     } else {
       var correctIndex = this.props.correctIndex;
@@ -40,13 +54,12 @@ module.exports = React.createClass({
               return (<AnswerEntryView answer={entry} 
                        index={index} 
                        correct={index===correctIndex}
-                       answerHandler={this.answerRerender}
+                       answerHandler={answerRerender}
                        questionId={questionId} /> 
               )}    
             )}
           </ul>
         </div>
-      
       )
     }
   }

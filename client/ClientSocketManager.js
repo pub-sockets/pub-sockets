@@ -49,10 +49,8 @@ module.exports = {
   /////////////////////////////////////
 
 
-  answer: function(emittingAnswer, correct, questionId) {
-    socketServer.emit('answer', { answer : emittingAnswer, 
-                                  correct: correct,
-                                  questionId: questionId });
+  answer: function(correct, questionId) {
+    socketServer.emit('answer', { correct: correct });
   },
   gameEnd: function() {
     socketServer.emit('gameEnd');

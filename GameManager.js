@@ -142,8 +142,6 @@ module.exports = {
 
       userSocket.on('startSingleTeamGame', function() {
         findLobby(function(foundLobby) {
-          foundLobby.lobbyDisplay = false;
-          foundLobby.lobbyListDisplay = false;
           var newGameModel = new PubGameModel();
           foundLobby.gameModel = newGameModel;
           //Updates everyone's lobby data
@@ -161,11 +159,8 @@ module.exports = {
         console.log('startMultipleTeamGame');
         console.log('disabled this until it works');
 
-        // findLobby(function(foundLobby) {
-
         // TODO implement multiple team games
 
-        // });
       });
 
       //////////////////////////////////////////
@@ -174,8 +169,13 @@ module.exports = {
 
       userSocket.on('answer', function(data) {
         console.log('answer');
+        console.log(data);
+        return;
         var relevantGame = allGames[allUsers[userId].gameId];
-        relevantGame.registerAnswer(data, userId, callback);
+        relevantGame.registerAnswer(data, userId, function(id, newData) {
+          //This will get called multiple times--three times, specifically
+          allUsers[id].socket.emit('newData', newData);
+        });
 
         //eventually, only emit to people in this room
         io.emit('newData', newDataObject)

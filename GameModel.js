@@ -13,12 +13,12 @@ var PubGameModel = function() {
   this.userIds = [];
 
   this.userObjects = [];
+
+  this.nextQuestionQueue = [];
   //in game user info: tracks question id, hint ids
 }
 
 PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
-  console.log('lobbyData');
-  console.log(lobbyData);
 
   var that = this;
   that.userIds = lobbyData.userIds;
@@ -32,6 +32,10 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
       questionUserId: id, 
       username: lobbyData.users[lobbyData.userIds.indexOf(id)]
     });
+    that.nextQuestionQueue.push({
+      queueUserId: id,
+      queueUsername: lobbyData.users[lobbyData.userIds.indexOf(id)]
+    })
   });
 
   _.each(that.userIds, function(id) {
@@ -76,7 +80,6 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     userObject.lobbyDisplay = false;
     userObject.lobbyListDisplay = false;
 
-    console.log(userObject);
     callback(userObject.questionUserId, userObject);
   });
 };
@@ -88,15 +91,67 @@ PubGameModel.prototype.startMultipleTeamGame = function(lobbyData, callback) {
 
 
 PubGameModel.prototype.registerAnswer = function(data, userId, callback) {
-  this.answeredQuestions[data.id] = true;
 
+  var that = this;
+  that.userIds = lobbyData.userIds;
+  lobbyData.usersInfo = that.userIds;
+  that.singleTeamGame = true;
+  that.gameStarted = true;
+  
+  _.each(that.userIds, function(id) {
+    //in multiple teams function, that is where teams would be assigned
+    that.userObjects.push({
+      questionUserId: id, 
+      username: lobbyData.users[lobbyData.userIds.indexOf(id)]
+    });
+  });
+
+  _.each(that.userIds, function(id) {
+    var newQuestionData = db.fetchNewQuestion();
+
+    var questionUserIndex = -1;
+    var workingUserObject = null;
+    for(var i = 0; i < that.userObjects.length; i++) {
+      if(that.userObjects[i].question === undefined) {
+        questionUserIndex = i;
+        workingUserObject = that.userObjects[i];
+        break;
+      }
+    }
+
+    workingUserObject.question = newQuestionData.question;
+    workingUserObject.answers = newQuestionData.answers;
+    workingUserObject.questionId = newQuestionData.id;
+    workingUserObject.correctIndex = newQuestionData.correctIndex-1;
+
+    // sets hint 1 
+    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
+      return (hinterObj.hint1User !== workingUserObject.username);
+    });
+    workingHintUserObject.hint1 = newQuestionData.hint1;
+    workingHintUserObject.hint1User = lobbyData.users[questionUserIndex];
+
+    // sets hint 2
+    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
+      return (hinterObj.hint2User !== workingUserObject.username);
+    });
+    workingHintUserObject.hint2 = newQuestionData.hint2;
+    workingHintUserObject.hint2User = lobbyData.users[questionUserIndex];
+  });
+
+  _.each(that.userObjects, function(userObject) {
+    that.decorateWithGameData(userObject);
+    userObject.lobbyDisplay = false;
+    userObject.lobbyListDisplay = false;
+
+    callback(userObject.questionUserId, userObject);
+  });
+
+/// old code
+  
   data.changingUserSocket = userId;
 
   this.hostTeamExtraTime += 5;
-
-  var newData;
-
-  callback(newData);
 };
 
 PubGameModel.prototype.decorateWithGameData = function(data, userId) {
