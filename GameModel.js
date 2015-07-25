@@ -9,6 +9,7 @@ var PubGameModel = function() {
   this.notHostTeamScore = 0;
   this.gameStarted = false;
   this.singleTeamGame = true;
+  this.gameStartTime = new Date();
 
   this.userIds = [];
 
@@ -35,42 +36,35 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
     that.nextQuestionQueue.push(that.userObjects[that.userObjects.length-1]);
   });
 
-  _.each(that.userIds, function(id) {
+  for(var i = 0; i < that.userObjects.length; i++) {
+    var len = that.userObjects.length;
+
     var newQuestionData = db.fetchNewQuestion();
 
-    var questionUserIndex = -1;
-    var workingUserObject = null;
-    for(var i = 0; i < that.userObjects.length; i++) {
-      if(that.userObjects[i].question === undefined) {
-        questionUserIndex = i;
-        workingUserObject = that.userObjects[i];
-        break;
-      }
-    }
+    that.userObjects[i].question = newQuestionData.question;
+    that.userObjects[i].answers = newQuestionData.answers;
+    that.userObjects[i].questionId = newQuestionData.id;
+    that.userObjects[i].correctIndex = newQuestionData.correctIndex-1;
+    that.userObjects[i].singleTeamGame = true;
 
-    workingUserObject.question = newQuestionData.question;
-    workingUserObject.answers = newQuestionData.answers;
-    workingUserObject.questionId = newQuestionData.id;
-    workingUserObject.correctIndex = newQuestionData.correctIndex-1;
+    var idx1;
+    var idx2;
+    if(len === 2) {
+      idx1 = (i===0) ? 1 : 0;
+      idx2 = idx1;
+    } else {
+      idx1 = (i+1)%len;
+      idx2 = (i+2)%len;
+    } 
 
-    // sets hint 1 
-    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint1User === undefined && 
-              hinterObj.id !== workingUserObject.id);
-      // return (hinterObj.hint1Id === newQuestionData.id);
-    });
-    workingHintUserObject.hint1 = newQuestionData.hint1;
-    workingHintUserObject.hint1User = lobbyData.users[questionUserIndex];
+    console.log(idx1);
+    console.log(idx2);
 
-    // sets hint 2
-    var workingHintUserObject = _.find(that.userObjects, function(hinterObj) {
-      return (hinterObj.hint2User === undefined && 
-              hinterObj.id !== workingUserObject.id);
-      // return (hinterObj.hint2Id === newQuestionData.id);
-    });
-    workingHintUserObject.hint2 = newQuestionData.hint2;
-    workingHintUserObject.hint2User = lobbyData.users[questionUserIndex];
-  });
+    that.userObjects[idx1].hint1 = newQuestionData.hint1;
+    that.userObjects[idx1].hint1User = lobbyData.users[i];
+    that.userObjects[idx2].hint2 = newQuestionData.hint2;
+    that.userObjects[idx2].hint2User = lobbyData.users[i];
+  }
 
   _.each(that.userObjects, function(userObject) {
     that.decorateWithGameData(userObject);
@@ -88,6 +82,16 @@ PubGameModel.prototype.startMultipleTeamGame = function(lobbyData, callback) {
 
 
 PubGameModel.prototype.registerAnswer = function(lobbyData, userId, correct, callback) {
+
+  if(correct) {
+    if(this.singleTeamGame) {  
+      this.hostTeamExtraTime += 5;
+      this.hostTeamScore++;
+    } else {
+      //find the guy who answered, find what team they are on, and add points and time 
+    }
+  }  
+
   var that = this;
 
   var newQuestionData = db.fetchNewQuestion();
@@ -106,8 +110,6 @@ PubGameModel.prototype.registerAnswer = function(lobbyData, userId, correct, cal
   // sets hint 1 
   var workingHintUserObject = that.nextQuestionQueue.shift();
   that.nextQuestionQueue.push(workingHintUserObject);
-  console.log(workingHintUserObject);
-  console.log(userToGetQuestion);
   if(workingHintUserObject.username === userToGetQuestion.username) {
     workingHintUserObject = that.nextQuestionQueue.shift();
     that.nextQuestionQueue.push(workingHintUserObject);
@@ -133,18 +135,25 @@ PubGameModel.prototype.registerAnswer = function(lobbyData, userId, correct, cal
     callback(userObject.id, userObject);
   });
 
-  this.hostTeamExtraTime += 5;
 };
 
 PubGameModel.prototype.decorateWithGameData = function(data, userId) {
+  console.log(this.gameStartTime);
+  console.log(this.hostTeamExtraTime);
   data.timeData = {
-    hostTeamExtraTime : this.hostTeamExtraTime,
-    notHostTeamExtraTime : this.notHostTeamExtraTime
+    hostTeamExtraTime : this.hostTeamExtraTime + this.gameStartTime.getTime()/1000,
+    notHostTeamExtraTime : this.notHostTeamExtraTime + this.gameStartTime.getTime()/1000
   };
   data.scoreData = {
     hostTeamScore : this.hostTeamScore,
     notHostTeamScore : this.notHostTeamScore
   };
+
+  if(this.singleTeamGame) {
+    data.onHostTeam = true;
+  } else {
+    //find out if this guy is on the host team or not
+  }
 };
 
 PubGameModel.prototype.endGame = function(callback) {

@@ -18,19 +18,21 @@ module.exports = React.createClass({
       hint1 : '',
       hint2 : '',
       timeData : {},
+      scoreData: {},
       gameStart : null,
       correctIndex: 0,
       questionId: 0,
       lobbies: ["Loading!"],
       lobbyDisplay: false,
-      lobbyListDisplay: true
+      lobbyListDisplay: true,
+      singleTeamGame: false,
+      gameHasEnded: false
     }
   },
   componentDidMount : function() {
     socketInterface.addNewDataListener(this.updateData);
   },
   updateData: function(data) {
-    console.log(data);
     this.setState(data);
   },
   displayLobbyList: function(){
@@ -38,6 +40,9 @@ module.exports = React.createClass({
       lobbyListDisplay: true,
       lobbyDisplay: false
     });
+  },
+  endGame: function() {
+    this.setState({gameHasEnded: true});
   },
   render: function() {
     if (this.state.lobbyListDisplay) {
@@ -64,9 +69,32 @@ module.exports = React.createClass({
     } else {
   //User is in the game view
       if (this.state.gameHasEnded) {
-        return (
-          <div>Game is over!!!</div>
-        )
+        if(this.state.singleTeamGame) {
+          return (
+            <div>
+              Game is over!!!
+              Your score: {this.state.scoreData.hostTeamScore}
+            </div>
+          )
+        } else {
+          if(this.state.onHostTeam) {
+            return (
+              <div>
+                Game is over!!!
+                Your score: {this.state.scoreData.hostTeamScore}
+                Their score: {this.state.scoreData.notHostTeamScore}
+              </div>
+            )
+          } else {
+            return (
+              <div>
+                Game over!
+                Your score: {this.state.scoreData.notHostTeamScore}
+                Their score: {this.state.scoreData.hostTeamScore}
+              </div>
+            )
+          }
+        }
       } else {
         return (
           <div id="AppView">
@@ -74,11 +102,15 @@ module.exports = React.createClass({
             <HintView hint={this.state.hint2} hintUser={this.state.hint2User} />
             <TimerView time={this.state.timeData} 
                        gameStart={this.state.gameStart} 
-                       scores={this.state.scoreData} />
+                       scores={this.state.scoreData} 
+                       singleTeamGame={this.state.singleTeamGame}
+                       endGame={this.endGame} />
             <QuestionView question={this.state.question} 
                           answers={this.state.answers}
                           correctIndex={this.state.correctIndex}
-                          id={this.state.questionId} />
+                          id={this.state.questionId}
+                          gameHasEnded={this.state.gameHasEnded}
+                          onHostTeam={this.state.onHostTeam} />
             <UsersView username={this.state.username} />
           </div>
         )
