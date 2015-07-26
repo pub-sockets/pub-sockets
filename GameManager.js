@@ -153,9 +153,19 @@ module.exports = {
       });
 
       userSocket.on('startMultipleTeamGame', function() {
-
-        // TODO implement multiple team games
-
+        findLobby(function(foundLobby) {
+          allGames[foundLobby.gameId] = foundLobby;
+          var newGameModel = new PubGameModel();
+          foundLobby.gameModel = newGameModel;
+          //Updates everyone's lobby data
+          io.emit('newData', {lobbies:allLobbyGames});        
+          //Removes this game from the lobby list (different from closing!)
+          var lobbyIndex = allLobbyGames.indexOf(foundLobby);
+          // if(lobbyIndex > -1) allLobbyGames.splice(lobbyIndex, 1);
+          newGameModel.startMultipleTeamGame(foundLobby, function(id, newData) {
+            allUsers[id].socket.emit('newData', newData);
+          });
+        });
       });
 
       //////////////////////////////////////////
@@ -171,9 +181,6 @@ module.exports = {
               allUsers[id].socket.emit('newData', newData);
             }
           );
-
-          // //eventually, only emit to people in this room
-          // io.emit('newData', newDataObject)
         })
       });
 

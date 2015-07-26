@@ -15,16 +15,19 @@ var PubGameModel = function() {
 
   this.userObjects = [];
 
-  this.nextQuestionQueue = [];
+  this.hostTeamUserObjects = [];
+  this.notHostTeamUserObjects = [];
+  this.hostTeamQuestionQueue = [];
+  this.notHostTeamQuestionQueue = [];
   //in game user info: tracks question id, hint ids
 }
 
-PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
+PubGameModel.prototype.startGame = function(lobbyData, singleTeam, callback) {
 
   var that = this;
   that.userIds = lobbyData.userIds;
   lobbyData.usersInfo = that.userIds;
-  that.singleTeamGame = true;
+  that.singleTeamGame = singleTeam;
   that.gameStarted = true;
   
   _.each(that.userIds, function(id) {
@@ -33,62 +36,102 @@ PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
       id: id, 
       username: lobbyData.users[lobbyData.userIds.indexOf(id)]
     });
-    that.nextQuestionQueue.push(that.userObjects[that.userObjects.length-1]);
   });
 
-  for(var i = 0; i < that.userObjects.length; i++) {
-    var len = that.userObjects.length;
-
-    var newQuestionData = db.fetchNewQuestion();
-
-    that.userObjects[i].question = newQuestionData.question;
-    that.userObjects[i].answers = newQuestionData.answers;
-    that.userObjects[i].questionId = newQuestionData.id;
-    that.userObjects[i].correctIndex = newQuestionData.correctIndex-1;
-    that.userObjects[i].singleTeamGame = true;
-
-    var idx1;
-    var idx2;
-    if(len === 2) {
-      idx1 = (i===0) ? 1 : 0;
-      idx2 = idx1;
-    } else {
-      idx1 = (i+1)%len;
-      idx2 = (i+2)%len;
-    } 
-
-    console.log(idx1);
-    console.log(idx2);
-
-    that.userObjects[idx1].hint1 = newQuestionData.hint1;
-    that.userObjects[idx1].hint1User = lobbyData.users[i];
-    that.userObjects[idx2].hint2 = newQuestionData.hint2;
-    that.userObjects[idx2].hint2User = lobbyData.users[i];
+  var teams = [];
+  if(this.singleTeamGame) {
+    teams.push(that.userObjects);
+  } else {
+    for(var i = 0; i < that.userObjects.length; i++) {
+      if(i < that.userObjects.length/2) {
+        this.hostTeamUserObjects.push(that.userObjects[i]);
+      } else {
+        this.notHostTeamUserObjects.push(that.userObjects[i]);
+      }
+    }
+    teams.push(this.hostTeamUserObjects);
+    teams.push(this.notHostTeamUserObjects);
   }
 
-  _.each(that.userObjects, function(userObject) {
-    that.decorateWithGameData(userObject);
-    userObject.lobbyDisplay = false;
-    userObject.lobbyListDisplay = false;
+  var currentTeamQuestionQueue = that.hostTeamQuestionQueue;
+  while(teams.length > 0) {
+    var thisTeam = teams.shift();
 
-    callback(userObject.id, userObject);
-  });
-};
+    for(var i = 0; i < thisTeam.length; i++) {
+      currentTeamQuestionQueue.push(that.userObjects[that.userObjects.length-1]);
+
+      var len = thisTeam.length;
+
+      var newQuestionData = db.fetchNewQuestion();
+
+      thisTeam[i].question = newQuestionData.question;
+      thisTeam[i].answers = newQuestionData.answers;
+      thisTeam[i].questionId = newQuestionData.id;
+      thisTeam[i].correctIndex = newQuestionData.correctIndex-1;
+      thisTeam[i].singleTeamGame = singleTeam;
+
+      var idx1;
+      var idx2;
+      if(len === 2) {
+        idx1 = (i===0) ? 1 : 0;
+        idx2 = idx1;
+      } else {
+        idx1 = (i+1)%len;
+        idx2 = (i+2)%len;
+      } 
+
+      console.log(idx1);
+      console.log(idx2);
+
+      thisTeam[idx1].hint1 = newQuestionData.hint1;
+      thisTeam[idx1].hint1User = lobbyData.users[i];
+      thisTeam[idx2].hint2 = newQuestionData.hint2;
+      thisTeam[idx2].hint2User = lobbyData.users[i];
+
+      if(teams.length > 0) currentTeamQuestionQueue = that.notHostTeamQuestionQueue;
+    }
+
+    _.each(thisTeam, function(userObject) {
+      that.decorateWithGameData(userObject);
+      userObject.lobbyDisplay = false;
+      userObject.lobbyListDisplay = false;
+
+      callback(userObject.id, userObject);
+    });
+  }
+}
+
+PubGameModel.prototype.startSingleTeamGame = function(lobbyData, callback) {
+  this.startGame(lobbyData, true, callback);
+}
 
 PubGameModel.prototype.startMultipleTeamGame = function(lobbyData, callback) {
-
+  this.startGame(lobbyData, false, callback);
 };
 
 
 
 PubGameModel.prototype.registerAnswer = function(lobbyData, userId, correct, callback) {
 
+  var answererIsOnHostTeam;
   if(correct) {
     if(this.singleTeamGame) {  
       this.hostTeamExtraTime += 5;
       this.hostTeamScore++;
+      answererIsOnHostTeam = true;
     } else {
-      //find the guy who answered, find what team they are on, and add points and time 
+      var appropriateTeam;
+      that = this;
+      if(!!_.find(that.hostTeamUserObjects, 
+        function(hostObj) {return hostObj.id === userId})){
+        this.hostTeamExtraTime += 5;
+        this.hostTeamScore++;
+        answererIsOnHostTeam = true;
+      } else {
+        this.notHostTeamExtraTime += 5;
+        this.notHostTeamScore++;
+        answererIsOnHostTeam = false;
+      }
     }
   }  
 
@@ -105,24 +148,26 @@ PubGameModel.prototype.registerAnswer = function(lobbyData, userId, correct, cal
   userToGetQuestion.questionId = newQuestionData.id;
   userToGetQuestion.correctIndex = newQuestionData.correctIndex-1;
 
+  var appropriateQuestionQueue;
+  appropriateQuestionQueue = 
+    (answererIsOnHostTeam) ? this.hostTeamQuestionQueue : this.notHostTeamQuestionQueue;
 
-  //is any of this correct? i don't know.
   // sets hint 1 
-  var workingHintUserObject = that.nextQuestionQueue.shift();
-  that.nextQuestionQueue.push(workingHintUserObject);
+  var workingHintUserObject = appropriateQuestionQueue.shift();
+  appropriateQuestionQueue.push(workingHintUserObject);
   if(workingHintUserObject.username === userToGetQuestion.username) {
-    workingHintUserObject = that.nextQuestionQueue.shift();
-    that.nextQuestionQueue.push(workingHintUserObject);
+    workingHintUserObject = appropriateQuestionQueue.shift();
+    appropriateQuestionQueue.push(workingHintUserObject);
   }
   workingHintUserObject.hint1 = newQuestionData.hint1;
   workingHintUserObject.hint1User = userToGetQuestion.username;
 
   // sets hint 2
-  var workingHintUserObject = that.nextQuestionQueue.shift();
-  that.nextQuestionQueue.push(workingHintUserObject);
+  var workingHintUserObject = appropriateQuestionQueue.shift();
+  appropriateQuestionQueue.push(workingHintUserObject);
   if(workingHintUserObject.username === userToGetQuestion.username) {
-    workingHintUserObject = that.nextQuestionQueue.shift();
-    that.nextQuestionQueue.push(workingHintUserObject);
+    workingHintUserObject = appropriateQuestionQueue.shift();
+    appropriateQuestionQueue.push(workingHintUserObject);
   }
   workingHintUserObject.hint2 = newQuestionData.hint2;
   workingHintUserObject.hint2User = userToGetQuestion.username;
@@ -152,7 +197,9 @@ PubGameModel.prototype.decorateWithGameData = function(data, userId) {
   if(this.singleTeamGame) {
     data.onHostTeam = true;
   } else {
-    //find out if this guy is on the host team or not
+    var that = this;
+    data.onHostTeam = !!_.find(that.hostTeamUserObjects, 
+      function(hostObj) {return hostObj.id === userId});
   }
 };
 

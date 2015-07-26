@@ -80,8 +80,8 @@ module.exports = React.createClass({
           if(this.state.onHostTeam) {
             return (
               <div>
-                Game is over!!!
-                Your score: {this.state.scoreData.hostTeamScore}
+                Game is over!!! <br/>
+                Your score: {this.state.scoreData.hostTeamScore}<br/>
                 Their score: {this.state.scoreData.notHostTeamScore}
               </div>
             )
@@ -111,7 +111,8 @@ module.exports = React.createClass({
                           id={this.state.questionId}
                           gameHasEnded={this.state.gameHasEnded}
                           onHostTeam={this.state.onHostTeam} />
-            <UsersView username={this.state.username} />
+            <UsersView username={this.state.username} 
+                       onHostTeam={this.state.onHostTeam} />
           </div>
         )
       } 

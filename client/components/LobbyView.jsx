@@ -40,7 +40,7 @@ module.exports = React.createClass({
     if(!this.props || !this.props.lobby) {
       return (<div></div>)
     } else if(this.props.lobby.closed) {
-      if(this.props.lobby.users.length > 3) {
+      if(this.props.lobby.users.length > 3 && this.props.lobby.users.length%2 === 0) {
         return(
           <div>
             <div>
