@@ -1,9 +1,9 @@
 body{
-  background-color:#fff;
   border: 1px solid black;
 }
 
 #AppView{
+  background-image: url("public/images/wood.jpg");
   height:100%;
   width:100%;
 }
@@ -34,4 +34,12 @@ li:hover{
 
 #questionView{
   height:50%;
+}
+
+.alpha{
+  background-color: #FF9966;
+}
+
+.bravo{
+  background-color: #3399FF;
 }

@@ -10,6 +10,7 @@ module.exports = React.createClass({
     var that = this;
     return (
       <div id="LobbyView">
+        <img url={"public/images/wood.jpg"}></img>
         <div>Your name: {this.props.username}</div>
         {this.props.lobbies.map(function(item){
           if(item.closed) return (<span></span>);

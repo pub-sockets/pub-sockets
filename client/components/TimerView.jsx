@@ -43,7 +43,7 @@ module.exports = React.createClass({
           enemyScore: this.props.scores.hostTeamScore
         });
       }
-      if(this.state.yourSecondsLeft < 1 && this.state.enemySecondsLeft < 1) {
+      if(this.state.yourSecondsLeft < 1 || this.state.enemySecondsLeft < 1) {
         this.props.endGame();
       }
     }

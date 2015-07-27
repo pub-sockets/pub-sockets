@@ -25,6 +25,14 @@ module.exports = React.createClass({
     }, 1000);
     this.render();
   },
+  renderTeamClass: function() {
+    if(this.props.singleTeamGame) {
+      return "";
+    } else {
+      if(this.props.onHostTeam) return "alpha";
+      else return "bravo";
+    }
+  },
   render: function(renderType) {
 
     //TODO: show the correct answer after you answer
@@ -49,7 +57,7 @@ module.exports = React.createClass({
       var answerRerender = this.answerRerender;
       var questionId = this.props.questionId;
       return (
-        <div id="questionView">
+        <div id="questionView" className={this.renderTeamClass()}>
           <p>
             {this.props.question}
           </p>

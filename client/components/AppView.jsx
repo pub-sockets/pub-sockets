@@ -26,6 +26,7 @@ module.exports = React.createClass({
       lobbyDisplay: false,
       lobbyListDisplay: true,
       singleTeamGame: false,
+      onHostTeam: true,
       gameHasEnded: false
     }
   },
@@ -72,7 +73,7 @@ module.exports = React.createClass({
         if(this.state.singleTeamGame) {
           return (
             <div>
-              Game is over!!!
+              Game over! <br/>
               Your score: {this.state.scoreData.hostTeamScore}
             </div>
           )
@@ -80,7 +81,7 @@ module.exports = React.createClass({
           if(this.state.onHostTeam) {
             return (
               <div>
-                Game is over!!! <br/>
+                Game over! <br/>
                 Your score: {this.state.scoreData.hostTeamScore}<br/>
                 Their score: {this.state.scoreData.notHostTeamScore}
               </div>
@@ -88,7 +89,7 @@ module.exports = React.createClass({
           } else {
             return (
               <div>
-                Game over!
+                Game over! <br/>
                 Your score: {this.state.scoreData.notHostTeamScore}
                 Their score: {this.state.scoreData.hostTeamScore}
               </div>
@@ -104,12 +105,14 @@ module.exports = React.createClass({
                        gameStart={this.state.gameStart} 
                        scores={this.state.scoreData} 
                        singleTeamGame={this.state.singleTeamGame}
-                       endGame={this.endGame} />
+                       endGame={this.endGame}
+                       onHostTeam={this.state.onHostTeam} />
             <QuestionView question={this.state.question} 
                           answers={this.state.answers}
                           correctIndex={this.state.correctIndex}
                           id={this.state.questionId}
                           gameHasEnded={this.state.gameHasEnded}
+                          singleTeamGame={this.state.singleTeamGame}
                           onHostTeam={this.state.onHostTeam} />
             <UsersView username={this.state.username} 
                        onHostTeam={this.state.onHostTeam} />

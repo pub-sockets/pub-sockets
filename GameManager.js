@@ -19,14 +19,13 @@ module.exports = {
 
       var userId = userSocket.id;
 
-      //Makes a new user
+      if(counter === 12) counter = 0;
       allUsers[userId] = {
-        name: animals[counter],
+        name: animals[counter++],
         gameId: null,
         id: userId,
         socket: userSocket
       }
-      counter++;
       
       io.emit('newData', { lobbies:allLobbyGames });
 
