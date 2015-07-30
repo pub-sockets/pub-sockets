@@ -34,6 +34,7 @@ module.exports = React.createClass({
     socketInterface.addNewDataListener(this.updateData);
   },
   updateData: function(data) {
+    console.log(data);
     this.setState(data);
   },
   displayLobbyList: function(){
@@ -47,17 +48,17 @@ module.exports = React.createClass({
   },
   render: function() {
     if (this.state.lobbyListDisplay) {
-      //User is in the lobby list view
+    //User is in the lobby list view
       return (<LobbyListView lobbies={this.state.lobbies} 
                              currentLobby={this.state.currentLobby}
+                             gameStart={this.state.gameStart}
+                             singleTeamGame={this.state.singleTeamGame}
+                             onHostTeam={this.state.onHostTeam}
                              username={this.state.username} />)
-  //User is in the lobby view
     } else if (this.state.lobbyDisplay) {
     //User is in the lobby display view
-      //iterates through all lobbies (yeah, i know)
       var yourLobby = null;
       for(var i = 0; i < this.state.lobbies.length; i++) {
-        //if your userId is in a lobby, 
         if(!this.state.lobbies[i].userIds) continue;
         if(this.state.lobbies[i].users.indexOf(this.state.username) > -1){
           yourLobby = this.state.lobbies[i];
@@ -66,9 +67,12 @@ module.exports = React.createClass({
       }
       return (<LobbyView lobby={yourLobby} 
                          username={this.state.username}
+                         gameStart={this.state.gameStart}
+                         singleTeamGame={this.state.singleTeamGame}
+                         onHostTeam={this.state.onHostTeam}
                          displayLobbyList={this.displayLobbyList} />)
     } else {
-  //User is in the game view
+    //User is in the game view
       if (this.state.gameHasEnded) {
         if(this.state.singleTeamGame) {
           return (
@@ -98,9 +102,15 @@ module.exports = React.createClass({
         }
       } else {
         return (
-          <div id="AppView">
-            <HintView hint={this.state.hint1} hintUser={this.state.hint1User} />
-            <HintView hint={this.state.hint2} hintUser={this.state.hint2User} />
+          <div id="app-view">
+            <UsersView username={this.state.username} 
+                       gameStart={this.state.gameStart}
+                       singleTeamGame={this.state.singleTeamGame}
+                       onHostTeam={this.state.onHostTeam} />
+            <div className="no-padding">
+              <HintView hint={this.state.hint1} hintUser={this.state.hint1User} />
+              <HintView hint={this.state.hint2} hintUser={this.state.hint2User} />
+            </div>
             <TimerView time={this.state.timeData} 
                        gameStart={this.state.gameStart} 
                        scores={this.state.scoreData} 
@@ -114,8 +124,6 @@ module.exports = React.createClass({
                           gameHasEnded={this.state.gameHasEnded}
                           singleTeamGame={this.state.singleTeamGame}
                           onHostTeam={this.state.onHostTeam} />
-            <UsersView username={this.state.username} 
-                       onHostTeam={this.state.onHostTeam} />
           </div>
         )
       } 

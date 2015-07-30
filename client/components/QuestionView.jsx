@@ -34,21 +34,19 @@ module.exports = React.createClass({
     }
   },
   render: function(renderType) {
-
-    //TODO: show the correct answer after you answer
     if(this.state.answerStatus === "wrong" ) {
       return (
-        <div class="wrong">
+        <div className="wrong">
           <br/>
-          <b>WRONG</b>
+          <h2>WRONG</h2>
           <br/>
         </div>
       )
     } else if(this.state.answerStatus === "right" ) {
       return (
-        <div class="right">
+        <div className="right">
           <br/>
-          <b>RIGHT</b>
+          <h2>RIGHT</h2>
           <br/>
         </div>
       )
@@ -57,20 +55,21 @@ module.exports = React.createClass({
       var answerRerender = this.answerRerender;
       var questionId = this.props.questionId;
       return (
-        <div id="questionView" className={this.renderTeamClass()}>
-          <p>
+        <div id="question-view" className={this.renderTeamClass() + " wood-frame light-wood"}>
+          <h2>
             {this.props.question}
-          </p>
-          <ul>
+          </h2>
+          <div>
             {this.props.answers.map(function(entry, index) {
-              return (<AnswerEntryView answer={entry} 
-                       index={index} 
-                       correct={index===correctIndex}
-                       answerHandler={answerRerender}
-                       questionId={questionId} /> 
+              return (
+                <AnswerEntryView answer={entry} 
+                                 index={index} 
+                                 correct={index===correctIndex}
+                                 answerHandler={answerRerender}
+                                 questionId={questionId} /> 
               )}    
             )}
-          </ul>
+          </div>
         </div>
       )
     }

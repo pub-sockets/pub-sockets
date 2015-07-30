@@ -51,32 +51,72 @@ module.exports = React.createClass({
   render: function() {
     if(this.props.singleTeamGame) {
       return (
-        <div className="timerView">
-          <div className="timerViewQuarter">
-            Your time: {this.state.yourSecondsLeft}
+        <div className="timer-view">
+          <div className={this.renderWarnings() + " timer-view-quarter"}>
+            <div>
+              Your time: {this.state.yourSecondsLeft}
+            </div>
           </div> 
-          <div className="timerViewQuarter">
-            Your team score: {this.state.yourScore}   
+          <div className={this.renderTeam() + " timer-view-quarter"}>
+            <div>
+              Your team score: {this.state.yourScore}   
+            </div>
           </div> 
         </div>
       )
     } else {
       return (
-        <div className="timerView">
-          <div className="timerViewQuarter">
-            Your time: {this.state.yourSecondsLeft}
+        <div className="timer-view">
+          <div className={this.renderWarnings() + " timer-view-quarter"}>
+            <div>
+              Your time: {this.state.yourSecondsLeft}
+            </div>
           </div> 
-          <div className="timerViewQuarter">
-            Your team score: {this.state.yourScore}   
+          <div className={this.renderTeam() + " timer-view-quarter"}>
+            <div>
+              Your team score: {this.state.yourScore}   
+            </div>
           </div> 
-          <div className="timerViewQuarter">
-            Their time: {this.state.enemySecondsLeft}  
+          <div className={this.renderWarnings(true) + " timer-view-quarter"}>
+            <div>
+              Their time: {this.state.enemySecondsLeft}  
+            </div>
           </div> 
-          <div className="timerViewQuarter">
-            Their team score: {this.state.enemyScore}
+          <div className={this.renderTeam(true) + " timer-view-quarter"}>
+            <div>
+              Their team score: {this.state.enemyScore}
+            </div>
           </div>
         </div>
       )
+    }
+  },
+  renderTeam: function(renderEnemyTeamColor) {
+    if(this.props.singleTeamGame) {
+      return "timer-normal";
+    } else if(this.props.onHostTeam) {
+      if(renderEnemyTeamColor) {
+        return "timer-bravo";
+      } else {
+        return "timer-alpha";
+      }
+    } else {
+      if(renderEnemyTeamColor) {
+        return "timer-alpha";
+      } else {
+        return "timer-bravo";
+      }
+    }
+  },
+  renderWarnings: function(notOnHostTeam) {
+    var relevantSecondsLeft = 
+      (notOnHostTeam) ? this.state.enemySecondsLeft : this.state.yourSecondsLeft;
+    if(relevantSecondsLeft < 6) {
+      return "timer-danger";
+    } else if (relevantSecondsLeft < 11) {
+      return "timer-warning";
+    } else {
+      return "timer-normal";
     }
   }
 });

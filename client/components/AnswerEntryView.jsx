@@ -14,9 +14,11 @@ module.exports = React.createClass({
   render: function() {
     var numToLetter = {0:'A',1:'B',2:'C',3:'D'};
     return (
-      <li onClick={this.clickHandler}>
-        {numToLetter[this.props.index]} : {this.props.answer}
-      </li>
+      <span className="no-padding question-half">
+        <div className="button wood answer-entry" onClick={this.clickHandler}>
+          {numToLetter[this.props.index]} : {this.props.answer}
+        </div>
+      </span>
     )
   }
 });
