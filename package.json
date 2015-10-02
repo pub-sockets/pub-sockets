@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TheRealest/pub-sockets.git"
+    "url": "git+https://github.com/pub-sockets/pub-sockets.git"
   },
   "author": "Réal Provencher, Nick McCormick",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TheRealest/pub-sockets/issues"
+    "url": "https://github.com/pub-sockets/pub-sockets/issues"
   },
-  "homepage": "https://github.com/TheRealest/pub-sockets#readme",
+  "homepage": "https://github.com/pub-sockets/pub-sockets#readme",
   "dependencies": {
     "babelify": "^6.1.2",
     "body-parser": "~1.12.0",
